@@ -54,17 +54,19 @@ public:
 
 	void readJson(FString fileName);
 
-	bool Trace(FVector start, FVector end, int ignorePolygon);
+	bool Trace(FVector start, FVector end, int ignorePolygon = -1);
 
 	TArray<FVector> getPath(std::vector<PolyPoint> &path);
 
-	void print(FString msg, float time = 500.0, FColor color = FColor::Cyan);
+	//void print(FString msg, float time = 500.0, FColor color = FColor::Cyan);
 
 	FVector getPoint(PolyPoint pp);
 
 	void initFakeGroundPoints();
 
-	void drawLine(FVector from, FVector to, FColor color = FColor(255,0,0), FVector z_offset = FVector(0,0,10));
+	void drawLine(FVector from, FVector to, FColor color = FColor(255, 0, 0), FVector z_offset = FVector(0, 0, 10));
+	void drawPoint(FVector pos, float size = 15.0, FColor color = FColor(255, 0, 0), FVector z_offset = FVector(0, 0, 10));
+	void drawCircle(FVector center, float radius, FColor color = FColor(255,0,0), FVector z_offset = FVector(0,0,10));
 
 	int Nvertices;
 
@@ -75,6 +77,7 @@ public:
 	float phi_max;
 	float v_max;
 	float sensor_range;
+	float sensor_range2;
 	const float scale = 100;
 	const float default_Z = 0;
 
@@ -101,7 +104,8 @@ public:
 	TArray<APolygon *> allFakePolygons;
 	TArray<APolygon *> allWalls;
 
-	
+	FVector startVel;
+	FVector goalVel;
 
 	TArray<ACar *> cars;
 	TArray<AItem *> items;

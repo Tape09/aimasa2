@@ -21,9 +21,7 @@ void AMapGen::BeginPlay()
 {
 	print("MapGen!", 20, FColor::Red);
 
-	Super::BeginPlay();
-
-	
+	Super::BeginPlay();	
 
 	const UWorld * world = GetWorld();
 
@@ -51,27 +49,14 @@ void AMapGen::BeginPlay()
 		}
 
 		for (int j = 0; j < startPoints.Num(); ++j) {
-			cars.Add(GetWorld()->SpawnActor<ACar>(startPoints[j], FVector(1,0,0).Rotation(), spawnParams));
+			cars.Add(GetWorld()->SpawnActor<ACar>(startPoints[j], startVel.Rotation(), spawnParams));
 		}
 
 		for (int j = 0; j < itemPoints.Num(); ++j) {
 			items.Add(GetWorld()->SpawnActor<AItem>(itemPoints[j], FVector(1, 0, 0).Rotation(), spawnParams));
 		}
 
-
-		//car = GetWorld()->SpawnActor<ACar>(start_pos, start_vel.Rotation(), spawnParams);
-		//goal = GetWorld()->SpawnActor<AGoal>(goal_pos, goal_vel.Rotation(), spawnParams);
-
-
-		
-
-
-
 	}
-
-	
-	
-
 }
 
 // Called every frame
@@ -172,48 +157,41 @@ void AMapGen::readJson(FString fileName)
 	phi_max = JsonObject->GetNumberField("phi_max");
 	v_max = JsonObject->GetNumberField("v_max") * scale;
 	sensor_range = JsonObject->GetNumberField("sensor_range") * scale;
+	sensor_range2 = sensor_range * sensor_range;
 
 	// ASSIGNMENT 2
 
 	//pos / velocity
-	TArray <TSharedPtr < FJsonValue >> vals = JsonObject->GetArrayField("goal_pos");
-	goalPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
-
-	vals = JsonObject->GetArrayField("start_pos");
-	startPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
-
-	i = 1;
-	while (true) {
-		FString fieldNameStart = FString("start_pos") + FString::FromInt(i);
-		FString fieldNameGoal = FString("goal_pos") + FString::FromInt(i);
-
-		//print_log(fieldNameStart);
-		//print_log(fieldNameGoal);
-		//print_log("===");
-
-		if (!JsonObject->HasField(fieldNameStart) || !JsonObject->HasField(fieldNameGoal)) {
-			break;
-		}
-
-		vals = JsonObject->GetArrayField(fieldNameStart);
-		startPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
-
-		vals = JsonObject->GetArrayField(fieldNameGoal);
-		goalPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
-
-		++i;
-	}
-	//allPoints.Add(start_pos);
+	TArray <TSharedPtr < FJsonValue >> vals;
 
 	TArray<FString> allKeys;
 	JsonObject->Values.GetKeys(allKeys);
 
 	for (int j = 0; j < allKeys.Num(); ++j) {
-		if(!allKeys[j].Contains("item")) continue;
-		vals = JsonObject->GetArrayField(allKeys[j]);
-		itemPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
+		if(allKeys[j].Contains("item")) {
+			vals = JsonObject->GetArrayField(allKeys[j]);
+			itemPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
+		}
+
+		if (allKeys[j].Contains("start_pos")) {
+			vals = JsonObject->GetArrayField(allKeys[j]);
+			startPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
+		}
+
+		if (allKeys[j].Contains("goal_pos")) {
+			vals = JsonObject->GetArrayField(allKeys[j]);
+			goalPoints.Add(FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
+		}
+
 		//print_log(itemPoints.Last());
 	}
+
+	vals = JsonObject->GetArrayField("start_vel");
+	startVel = (FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
+
+	vals = JsonObject->GetArrayField("goal_vel");
+	goalVel = (FVector(-(float)vals[0]->AsNumber()*scale, (float)vals[1]->AsNumber()*scale, default_Z));
+
 
 	//print_log(startPoints.Num());
 
@@ -226,7 +204,6 @@ void AMapGen::readJson(FString fileName)
 
 
 bool AMapGen::Trace(FVector start, FVector end, int polyNum) {
-
 	FCollisionQueryParams QParams = FCollisionQueryParams();
 	FCollisionResponseParams RParams = FCollisionResponseParams();
 	QParams.bTraceComplex = true;
@@ -258,10 +235,7 @@ bool AMapGen::Trace(FVector start, FVector end, int polyNum) {
 
 	float dist_error = abs(first_hit_dist - expected_dist) / expected_dist;
 
-	return dist_error < 0.1; // kanske fel
-
-
-	
+	return dist_error < 0.1; // kanske fel	
 }
 
 TArray<FVector> AMapGen::getPath(std::vector<PolyPoint> &path) {
@@ -273,12 +247,6 @@ TArray<FVector> AMapGen::getPath(std::vector<PolyPoint> &path) {
 
 	return pathCoordinates;
 }
-
-
-void AMapGen::print(FString msg, float time, FColor color) {
-	GEngine->AddOnScreenDebugMessage(-1, time, color, msg);
-}
-
 
 
 FVector AMapGen::getPoint(PolyPoint pp) {
@@ -307,9 +275,13 @@ void AMapGen::drawLine(FVector from, FVector to, FColor color, FVector z_offset)
 	DrawDebugLine(GetWorld(), from + z_offset, to + z_offset, color, true, -1, 0, 10);
 }
 
+void AMapGen::drawPoint(FVector pos, float size, FColor color, FVector z_offset) {
+	DrawDebugPoint(GetWorld(),pos+z_offset,size,color,true);
+}
 
-
-
+void AMapGen::drawCircle(FVector center, float radius, FColor color, FVector z_offset) {
+	DrawDebugCircle(GetWorld(),center+z_offset,radius,100,color,true,-1.0,(uint8)'\000',10.0,FVector(0,1,0),FVector(1,0,0),false);
+}
 
 
 

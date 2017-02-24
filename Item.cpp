@@ -13,6 +13,7 @@ AItem::AItem()
 	RootComponent = SphereComponent;
 	SphereComponent->InitSphereRadius(10.0f);
 	SphereComponent->SetCollisionProfileName(TEXT("Pawn"));
+	SphereComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
 
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
@@ -23,6 +24,8 @@ AItem::AItem()
 		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -10.0f));
 		SphereVisual->SetWorldScale3D(FVector(0.5f));
 	}
+	SphereVisual->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+
 
 	//// Create a particle system that we can activate or deactivate
 	//OurParticleSystem1 = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovementParticles"));
