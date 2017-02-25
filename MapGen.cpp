@@ -233,7 +233,7 @@ bool AMapGen::Trace(FVector start, FVector end, int polyNum) {
 
 	if(first_hit_dist == 0.0) first_hit_dist = expected_dist;
 
-	float dist_error = abs(first_hit_dist - expected_dist) / expected_dist;
+	float dist_error = std::abs(first_hit_dist - expected_dist) / expected_dist;
 
 	return dist_error < 0.1; // kanske fel	
 }

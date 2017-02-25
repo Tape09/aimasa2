@@ -160,7 +160,7 @@ AccelerationInfo accelerate_between(float x0, float v0, float x3, float v3, floa
 //	float dot = a.X*b.X + a.Y*b.Y;
 //	float det = a.X*b.Y - a.Y*b.X;
 //	float angle = atan2(det, dot);
-//	return abs(angle);
+//	return std::abs(angle);
 //}
 
 float getAngle(FVector a, FVector b) {
@@ -168,7 +168,7 @@ float getAngle(FVector a, FVector b) {
 	a.Z = 0;
 	b.Z = 0;
 	float angle = acos(dot/(a.Size() * b.Size()));
-	return abs(angle);
+	return std::abs(angle);
 }
 
 bool isInPolygon(FVector point, const TArray<FVector> & polyBounds) {
@@ -179,7 +179,7 @@ bool isInPolygon(FVector point, const TArray<FVector> & polyBounds) {
 	}
 	angleSum += getAngle(polyBounds[0] - point, polyBounds[polyBounds.Num() - 1] - point);
 
-	return (abs(angleSum - twopi) < 0.0001);
+	return (std::abs(angleSum - twopi) < 0.0001);
 }
 
 bool isInAnyPolygon(FVector tempPoint, const TArray<TArray<FVector>> & polygons) {
