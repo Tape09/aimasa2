@@ -5,7 +5,7 @@
 
 float wrapAngle(float angle) {
 	angle = mod2pi(angle);
-	return angle >= pi ? angle-2*pi : angle;
+	return angle >= pii ? angle-2*pii : angle;
 }
 
 float vecAngle(const FVector & fv) {
@@ -17,7 +17,7 @@ float mmod(float m, float n) {
 }
 
 float rad2deg(const float & rad) {
-	return rad * 180 / pi;
+	return rad * 180 / pii;
 }
 
 //float mod2pi(float angle) {

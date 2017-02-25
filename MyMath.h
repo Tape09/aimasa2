@@ -7,7 +7,7 @@
 #include <fstream>
 #include <cstdio>
 
-const float pi = 4*FGenericPlatformMath::Atan(1);
+const float pii = 4*FGenericPlatformMath::Atan(1);
 const float twopi = 8 * FGenericPlatformMath::Atan(1);
 float wrapAngle(float angle);
 float vecAngle(const FVector & fv);
