@@ -179,12 +179,12 @@ bool isInPolygon(FVector point, const TArray<FVector> & polyBounds) {
 	}
 	angleSum += getAngle(polyBounds[0] - point, polyBounds[polyBounds.Num() - 1] - point);
 
-	return (std::abs(angleSum - twopi) < 0.0001);
+	return (std::abs(angleSum - twopi) < 0.00001);
 }
 
 bool isInAnyPolygon(FVector tempPoint, const TArray<TArray<FVector>> & polygons) {
 	bool inPolygon = false;
-	for (int j = 0; j < polygons.Num() - 1; j++) {
+	for (int j = 0; j < polygons.Num(); j++) {
 		inPolygon = isInPolygon(tempPoint, polygons[j]);
 		if (inPolygon)
 			break;

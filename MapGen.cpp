@@ -11,7 +11,7 @@ AMapGen::AMapGen()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	FString problem = FString("problem_A3");
+	FString problem = FString("problem_A12");
 	readJson(problem);
 	initFakeGroundPoints();
 }
@@ -103,6 +103,7 @@ void AMapGen::readJson(FString fileName)
 			groundPoints.Add(FVector(-x*scale, y*scale, default_Z));
 			allPoints.Add(FVector(-x*scale, y*scale, default_Z));
 			cornerPoints.Add(FVector(-x*scale, y*scale, default_Z));
+			allPointsPolygonIndex.Add(i);
 			//GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Cyan, FVector(-x*scale, y*scale, 0).ToString());//FString::SanitizeFloat(Hit.Distance));
 			
 			Nvertices++;
@@ -284,7 +285,24 @@ void AMapGen::drawCircle(FVector center, float radius, FColor color, FVector z_o
 }
 
 
+inline FVector AMapGen::randomPoint(FVector middle, float radius) {
+	if(radius < 0) radius = sensor_range;
 
+	float random_angle;
+	float random_radius;
+
+	FVector random_direction;
+	FVector random_point;
+
+	do {
+		random_angle = FMath::RandRange(0.0, twopi);
+		random_direction = FVector(cos(random_angle), sin(random_angle), 0.0);
+		random_radius = FMath::RandRange(0.0, radius);
+		random_point = middle + random_radius*random_direction;
+	} while (isInAnyPolygon(random_point, allGroundPoints) || !isInPolygon(random_point, wallPoints));
+
+	return random_point;
+}
 
 
 

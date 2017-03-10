@@ -9,51 +9,10 @@
 #include "MyMath.h"
 #include <unordered_set>
 #include <vector>
+#include "GuardHelper.h"
 #include "StaticGuard.generated.h"
 
 
-
-
-
-struct IntSet {
-	std::unordered_set<int> ints;
-
-	IntSet operator-(const IntSet & other) {
-		IntSet out;
-		for (const int & i : ints) {
-			if (other.ints.count(i) == 0) {
-				out.ints.insert(i);
-			}
-		}
-		return out;
-	}
-
-	IntSet operator+(const IntSet & other) {
-		IntSet out;
-		out.ints.insert(ints.begin(), ints.end());
-		out.ints.insert(other.ints.begin(),other.ints.end());
-		return out;
-	}
-
-	IntSet & operator+=(const IntSet & other) {
-		ints.insert(other.ints.begin(), other.ints.end());
-		return *this;
-	}
-
-	IntSet & operator-=(const IntSet & other) {
-		for (const int & i : other.ints) {
-			ints.erase(i);
-		}
-		return *this;
-	}
-
-
-};
-
-struct Guard {
-	FVector pos;
-	IntSet items;
-};
 
 UCLASS()
 class AIMASA2_API AStaticGuard : public AActor

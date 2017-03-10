@@ -68,6 +68,8 @@ public:
 	void drawPoint(FVector pos, float size = 15.0, FColor color = FColor(255, 0, 0), FVector z_offset = FVector(0, 0, 10));
 	void drawCircle(FVector center, float radius, FColor color = FColor(255,0,0), FVector z_offset = FVector(0,0,10));
 
+	FVector randomPoint(FVector mid, float radius = -1);
+
 	int Nvertices;
 
 	float L_car;
@@ -93,6 +95,7 @@ public:
 
 	TArray<TArray<FVector>> allWallPoints;
 	TArray<FVector> allPoints;
+	TArray<int> allPointsPolygonIndex;
 	TArray<FVector> cornerPoints;
 	TArray<FVector> wallPoints;
 

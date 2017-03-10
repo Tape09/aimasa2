@@ -6,6 +6,9 @@
 #include <string>
 #include <fstream>
 #include <cstdio>
+#include <unordered_set>
+#include <utility>
+
 
 const float pii = 4*FGenericPlatformMath::Atan(1);
 const float twopi = 8 * FGenericPlatformMath::Atan(1);
@@ -93,3 +96,20 @@ bool isInPolygon(FVector point, const TArray<FVector> & polyBounds);
 bool isInAnyPolygon(FVector tempPoint, const TArray<TArray<FVector>> & polygons);
 
 FVector randVel(float max_v);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -50,7 +50,7 @@ ACar::ACar()
 	if (ParticleAsset2.Succeeded()) {
 		OurParticleSystem2->SetTemplate(ParticleAsset2.Object);
 	}
-
+	OurParticleSystem2->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
 	
 
 	
