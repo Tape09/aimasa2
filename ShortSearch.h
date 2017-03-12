@@ -34,7 +34,7 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	struct Edge {
+	/*struct Edge {
 		Guard * start;
 		Guard * end;
 		float d;
@@ -50,6 +50,11 @@ public:
 		void reverse() {
 			std::swap(start,end);
 		}
+	};*/
+
+	struct PathSegment {
+		FVector waypoint;
+		float total_dist;
 	};
 
 	void two_opt_mtsp(std::vector<Guard*> & path);
@@ -59,6 +64,7 @@ public:
 	float path_len(const std::vector<Guard*> & path);
 	float edge_dist(Guard* g1, Guard* g2);
 	
+	void make_play_path(const std::vector<Guard*> & path);
 
 	void init();
 
@@ -75,13 +81,20 @@ public:
 	int n_guards;
 	int n_items;
 
-	int n_sets = 1000;
-	int n_iterations = 100;
+	int n_sets = 5000;
+	int n_iterations = 10000;
 	float p_mut = 0.5;
+
+	float t_now = 0;
 
 	PathPlanner_KP planner;
 	AMapGen * map;
 
+	std::vector<Guard> start_guards;
+	std::vector<Guard> generated_guards;
+	std::vector<std::vector<Guard*>> final_path;
+	std::vector< std::vector<PathSegment> > play_path;
+	//std::vector< int> next_segment;
 
 	std::unordered_map<std::pair<Guard*,Guard*>, float, std::hash<std::pair<Guard*,Guard*>>, UnorderedEqual> edge_dists;
 };

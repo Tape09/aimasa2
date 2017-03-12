@@ -50,6 +50,51 @@ void AShortSearch::Tick( float DeltaTime )
 		return;
 	}
 
+	t_now += DeltaTime;
+
+	for (int i = 0; i < n_guards; ++i) {
+		float my_dist = t_now * map->v_max;
+
+		for (int j = 1; j < play_path[i].size(); ++j) {
+			if (my_dist < play_path[i][j].total_dist) {
+
+				for (auto it = final_path[i][j-1]->items.ints.begin(); it != final_path[i][j-1]->items.ints.end(); ++it) {
+					map->items[*it]->SetActorHiddenInGame(true);
+				}
+
+				FVector base = play_path[i][j - 1].waypoint;
+				FVector next = play_path[i][j].waypoint;
+				FVector direction = next-base;
+				direction.Normalize();
+				float dist_traveled = my_dist - play_path[i][j - 1].total_dist;
+				FVector target_position = base + dist_traveled * direction;
+				map->drawPoint(target_position,5);
+				map->cars[i]->SetActorLocation(target_position);
+				break;
+			} else if (j == play_path[i].size()-1 && my_dist >= play_path[i][j].total_dist) {
+				FVector target_position = play_path[i][j].waypoint;
+				map->drawPoint(target_position, 5);
+				map->cars[i]->SetActorLocation(target_position);
+			} else {
+							
+			}
+		}
+	}
+
+	for (int i = 0; i < map->items.Num(); ++i) {
+		FVector item_pos = map->items[i]->GetActorLocation();
+		for (int j = 0; j < n_guards; ++j) {
+			FVector car_pos = map->cars[j]->GetActorLocation();
+			
+			if (FVector::DistSquared(item_pos, car_pos) < map->sensor_range2) {
+				if (map->Trace(item_pos, car_pos)) {
+					map->items[i]->SetActorHiddenInGame(true);
+				}
+			}
+		}
+	}
+
+
 
 }
 
@@ -60,7 +105,7 @@ void AShortSearch::init() {
 	//test_2opt();
 
 	IntSet start_items;
-	std::vector<Guard> start_guards;
+	
 	for (int i = 0; i < n_guards; ++i) {
 		Guard g;
 		g.pos = map->startPoints[i];
@@ -89,7 +134,7 @@ void AShortSearch::init() {
 
 
 	// create random guards
-	std::vector<Guard> generated_guards;
+	
 
 	for (int i = 0; i < n_sets; ++i) {
 		int rand_idx = FMath::RandRange(0, map->itemPoints.Num() - 1);
@@ -150,9 +195,9 @@ void AShortSearch::init() {
 	//std::vector<Guard*> nonstart_guards = rcover;
 
 
-	new_path.insert(new_path.begin(),pstart_guards.begin(),pstart_guards.end());
-	if(new_path.size() > 1) {
-		std::random_shuffle(new_path.begin()+1,new_path.end());
+	new_path.insert(new_path.begin(), pstart_guards.begin(), pstart_guards.end());
+	if (new_path.size() > 1) {
+		std::random_shuffle(new_path.begin() + 1, new_path.end());
 	}
 
 	std::vector<Guard*> old_path = new_path;
@@ -160,25 +205,25 @@ void AShortSearch::init() {
 
 	bool mutate;
 
-	for(int i = 0; i<n_iterations; ++i) {
-		print_log(path_len(new_path));
+	for (int i = 0; i < n_iterations; ++i) {
+		//print_log(path_len(new_path));
 
 		// mutate?
 		mutate = FMath::FRandRange(0.0, 1.0) < p_mut;
-		
-		if(mutate) {
+
+		if (mutate) {
 			int mut_idx;
 			do {
 				mut_idx = FMath::RandRange(0, new_path.size() - 1);
-			} while(new_path[mut_idx]->is_start);
+			} while (new_path[mut_idx]->is_start);
 
 			temp_cover = randomCover(pgenerated_guards, new_path[mut_idx]->items);
-			new_path.erase(std::next(new_path.begin(),mut_idx));
-			new_path.insert(std::next(new_path.begin(), mut_idx),temp_cover.begin(), temp_cover.end());
+			new_path.erase(std::next(new_path.begin(), mut_idx));
+			new_path.insert(std::next(new_path.begin(), mut_idx), temp_cover.begin(), temp_cover.end());
 		}
 
 		// random cover
-		new_path = randomCoverSpecial(new_path,lost_items);
+		new_path = randomCoverSpecial(new_path, lost_items);
 
 		// two opt
 		two_opt_mtsp(new_path);
@@ -197,26 +242,106 @@ void AShortSearch::init() {
 		} else {
 			new_path = old_path;
 		}
-		
+
 	}
 
-	
+
 	print_log(path_len(new_path));
-	draw_path(new_path);
+	make_play_path(new_path);
+
+
+	print_log("TIME TAKEN: " + FString::SanitizeFloat(path_len(new_path) / map->v_max));
+
+	//draw_path(new_path);
+
+	//for (int i = 0; i < n_guards; ++i) {
+	//	for (int j = 0; j < play_path[i].size(); ++j) {
+	//		map->drawPoint(play_path[i][j].waypoint,15,FColor(0,0,255));
+	//	}
+	//}
+
+
+	//for (int i = 0; i < new_path.size(); ++i) {
+	//	for (auto it = new_path[i]->items.ints.begin(); it != new_path[i]->items.ints.end(); ++it) {
+	//		map->items[*it]->SetActorHiddenInGame(true);
+	//	}
+	//}
+
+
+	//for (int i = 0; i < n_guards; ++i) {
+	//	print_log(final_path[i].size());
+	//	print_log(play_path[i].size());
+	//	for (int j = 0; j < final_path[i].size(); ++j) {
+	//		for (auto it = final_path[i][j]->items.ints.begin(); it != final_path[i][j]->items.ints.end(); ++it) {
+	//			map->items[*it]->SetActorHiddenInGame(true);
+	//		}
+	//	}
+	//}
+	
+
+}
+
+void AShortSearch::make_play_path(const std::vector<Guard*> & path) {
+	play_path.clear();
+	final_path.clear();
+	PathSegment g;
+	for (int i = 0; i < path.size() - 1; ++i) {
+		if (path[i]->is_start) {
+			play_path.push_back(std::vector<PathSegment>());
+			final_path.push_back(std::vector<Guard*>());
+		}
+
+		g.waypoint = path[i]->pos;
+		g.total_dist = 0;
+		play_path.back().push_back(g);
+		final_path.back().push_back(path[i]);
+		
+		if (!path[i + 1]->is_start) {
+			Path_KP pkp = planner.find_path(path[i]->pos, path[i + 1]->pos);
+			for (int j = 1; j < pkp.waypoints.size()-1; ++j) {
+				g.waypoint = pkp.waypoints[j];
+				g.total_dist = 0;
+				play_path.back().push_back(g);
+				final_path.back().push_back(path[i]);
+			}
+		}
+	}
+
+	g.waypoint = path.back()->pos;
+	g.total_dist = 0;
+	play_path.back().push_back(g);
+	final_path.back().push_back(path.back());
+
+	float d;
+	for (int i = 0; i < play_path.size(); ++i) {
+		d = 0;
+		for (int j = 1; j < play_path[i].size(); ++j) {
+			d += FVector::Dist(play_path[i][j-1].waypoint, play_path[i][j].waypoint);
+			play_path[i][j].total_dist = d;
+		}
+	}
 }
 
 void AShortSearch::draw_path(const std::vector<Guard*> & path) const {
+	reset_log_file();
+
 	for (int i = 0; i < path.size() - 1; ++i) {		
 		if (path[i]->is_start) {
 			map->drawPoint(path[i]->pos, 30.0, FColor(0, 255, 0));
-		}
-
+			//print_log(path[i]->pos);
+			//file_log("NEW PATH");
+			//file_log(FString::SanitizeFloat(path[i]->pos.X) + "," + FString::SanitizeFloat(path[i]->pos.Y));
+		}		
 		if (!path[i + 1]->is_start) {
 			map->drawPoint(path[i+1]->pos);
+			//print_log(path[i+1]->pos);
+			//file_log(FString::SanitizeFloat(path[i + 1]->pos.X) + "," + FString::SanitizeFloat(path[i + 1]->pos.Y));
 			Path_KP pkp = planner.find_path(path[i]->pos, path[i + 1]->pos);
 			for (int j = 0; j < pkp.waypoints.size()-1; ++j) {
 				//print_log(pkp.waypoints[j]);
 				map->drawLine(pkp.waypoints[j], pkp.waypoints[j + 1]);
+				//print_log(path[j + 1]->pos);
+				//file_log(FString::SanitizeFloat(pkp.waypoints[j + 1].X) + "," + FString::SanitizeFloat(pkp.waypoints[j + 1].Y));
 			}			
 		}
 	}

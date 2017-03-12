@@ -12,6 +12,7 @@ AMapGen::AMapGen()
 	PrimaryActorTick.bCanEverTick = true;
 
 	FString problem = FString("problem_A12");
+	//FString problem = FString("problem_A3");
 	readJson(problem);
 	initFakeGroundPoints();
 }
@@ -49,7 +50,7 @@ void AMapGen::BeginPlay()
 		}
 
 		for (int j = 0; j < startPoints.Num(); ++j) {
-			cars.Add(GetWorld()->SpawnActor<ACar>(startPoints[j], startVel.Rotation(), spawnParams));
+			cars.Add(GetWorld()->SpawnActor<ACar2>(startPoints[j], startVel.Rotation(), spawnParams));
 		}
 
 		for (int j = 0; j < itemPoints.Num(); ++j) {
@@ -158,6 +159,7 @@ void AMapGen::readJson(FString fileName)
 	phi_max = JsonObject->GetNumberField("phi_max");
 	v_max = JsonObject->GetNumberField("v_max") * scale;
 	sensor_range = JsonObject->GetNumberField("sensor_range") * scale;
+	//sensor_range *= 0.999;
 	sensor_range2 = sensor_range * sensor_range;
 
 	// ASSIGNMENT 2

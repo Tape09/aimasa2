@@ -120,7 +120,11 @@ Path_KP PathPlanner_KP::find_path(FVector from, FVector to) const {
 	out.dist = best_dist;
 	out.waypoints.push_back(from);
 	out.waypoints.push_back(map->allPoints[best_vfrom]);
-	out.waypoints.insert(out.waypoints.end(), dmat[best_vfrom][best_vto].waypoints.begin(), dmat[best_vfrom][best_vto].waypoints.end());
+
+	if (best_vfrom != best_vto) {
+		out.waypoints.insert(out.waypoints.end(), dmat[best_vfrom][best_vto].waypoints.begin(), dmat[best_vfrom][best_vto].waypoints.end());
+	} 	
+	
 	out.waypoints.push_back(to);
 		
 	return out;

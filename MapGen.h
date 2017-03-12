@@ -6,6 +6,7 @@
 #include "Json.h"
 #include "Polygon.h"
 #include "Car.h"
+#include "Car2.h"
 #include "Item.h"
 //#include "Goal.h"
 #include <vector>
@@ -110,7 +111,7 @@ public:
 	FVector startVel;
 	FVector goalVel;
 
-	TArray<ACar *> cars;
+	TArray<ACar2 *> cars;
 	TArray<AItem *> items;
 };
 
