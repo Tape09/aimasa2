@@ -26,7 +26,7 @@ ACar2::ACar2()
 		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 		SphereVisual->SetWorldScale3D(FVector(1.0f));
 	}
-	static ConstructorHelpers::FObjectFinder<UMaterial> mat(TEXT("Material'/Game/StarterContent/Materials/M_Basic_Wall4.M_Basic_Wall4'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> mat(TEXT("Material'/Game/StarterContent/Materials/M_MRed.M_MRed'"));
 	if (mat.Succeeded()) {
 		SphereVisual->SetMaterial(0, mat.Object);
 	}
@@ -46,7 +46,7 @@ ACar2::ACar2()
 		SphereVisual2->SetWorldScale3D(FVector(1.0f,1.0f,0.5f));
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> mat2(TEXT("Material'/Game/StarterContent/Materials/M_Basic_Wall3.M_Basic_Wall3'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> mat2(TEXT("Material'/Game/StarterContent/Materials/M_MYellow.M_MYellow'"));
 	if (mat2.Succeeded()) {
 		SphereVisual2->SetMaterial(0, mat2.Object);
 	}

@@ -18,15 +18,22 @@ AItem::AItem()
 
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereVisualAsset(TEXT("/Game/StarterContent/Props/SM_Bush.SM_Bush"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereVisualAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 	if (SphereVisualAsset.Succeeded()) {
 		SphereVisual->SetStaticMesh(SphereVisualAsset.Object);
 		SphereVisual->SetRelativeRotation(FRotator(0, 180, 0));
-		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -10.0f));
-		SphereVisual->SetWorldScale3D(FVector(0.5f));
+		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, 10.0f));
+		SphereVisual->SetWorldScale3D(FVector(0.25f));
 	}
 	SphereVisual->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
 	SphereVisual->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> mat(TEXT("Material'/Game/StarterContent/Materials/M_MGreen.M_MGreen'"));
+	if (mat.Succeeded()) {
+		SphereVisual->SetMaterial(0, mat.Object);
+	}
+
+	//
 
 	//// Create a particle system that we can activate or deactivate
 	//OurParticleSystem1 = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovementParticles"));

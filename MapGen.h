@@ -8,7 +8,7 @@
 #include "Car.h"
 #include "Car2.h"
 #include "Item.h"
-//#include "Goal.h"
+#include "Goal.h"
 #include <vector>
 #include <queue>
 #include <algorithm>
@@ -68,6 +68,10 @@ public:
 	void drawLine(FVector from, FVector to, FColor color = FColor(255, 0, 0), FVector z_offset = FVector(0, 0, 10));
 	void drawPoint(FVector pos, float size = 15.0, FColor color = FColor(255, 0, 0), FVector z_offset = FVector(0, 0, 10));
 	void drawCircle(FVector center, float radius, FColor color = FColor(255,0,0), FVector z_offset = FVector(0,0,10));
+	void setGoalVisibility(bool on);
+	void setCarVisibility(bool on);
+	void setItemVisibility(bool on);
+
 
 	FVector randomPoint(FVector mid, float radius = -1);
 
@@ -113,5 +117,6 @@ public:
 
 	TArray<ACar2 *> cars;
 	TArray<AItem *> items;
+	TArray<AGoal *> goals;
 };
 

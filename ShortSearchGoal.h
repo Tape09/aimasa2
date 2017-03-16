@@ -14,25 +14,24 @@
 #include <iterator>
 #include <algorithm>
 #include <limits>
-#include "ShortSearch.generated.h"
+#include "ShortSearchGoal.generated.h"
 
 
 
 
 UCLASS()
-class AIMASA2_API AShortSearch : public AActor
-{
+class AIMASA2_API AShortSearchGoal : public AActor {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
-	AShortSearch();
+	AShortSearchGoal();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
+
 	// Called every frame
-	virtual void Tick( float DeltaSeconds ) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	struct PathSegment {
 		FVector waypoint;
@@ -43,10 +42,10 @@ public:
 	void two_opt_swap1(std::vector<Guard*> & path, int idx1, int idx2);
 	void two_opt_swap2(std::vector<Guard*> & path, int idx1, int idx2);
 
-	float path_len(const std::vector<Guard*> & path);
+	float path_len(const std::vector<Guard*> & path, std::unordered_map<Guard*, Guard*> sg_map);
 	float edge_dist(Guard* g1, Guard* g2);
-	
-	void make_play_path(const std::vector<Guard*> & path);
+
+	void make_play_path(std::vector<Guard*> & path);
 
 	void init();
 
@@ -73,10 +72,14 @@ public:
 	AMapGen * map;
 
 	std::vector<Guard> start_guards;
+	std::vector<Guard> goal_guards;
 	std::vector<Guard> generated_guards;
 	std::vector<std::vector<Guard*>> final_path;
 	std::vector< std::vector<PathSegment> > play_path;
+
+	std::unordered_map<Guard*,Guard*> start_goal_mapping;
+
 	//std::vector< int> next_segment;
 
-	std::unordered_map<std::pair<Guard*,Guard*>, float, std::hash<std::pair<Guard*,Guard*>>, UnorderedEqual> edge_dists;
+	std::unordered_map<std::pair<Guard*, Guard*>, float, std::hash<std::pair<Guard*, Guard*>>, UnorderedEqual> edge_dists;
 };

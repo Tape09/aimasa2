@@ -12,7 +12,7 @@ APolygon::APolygon()
 	mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GeneratedMesh"));
 	RootComponent = mesh;
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> mat(TEXT("Material'/Game/StarterContent/Materials/M_Basic_Wall2.M_Basic_Wall2'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> mat(TEXT("Material'/Game/StarterContent/Materials/M_MWhite.M_MWhite'"));
 	if (mat.Succeeded()) {
 		mesh->SetMaterial(1, mat.Object);
 	}

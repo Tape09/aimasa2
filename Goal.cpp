@@ -17,23 +17,30 @@ AGoal::AGoal()
 
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereVisualAsset(TEXT("/Game/StarterContent/Props/SM_Bush.SM_Bush"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereVisualAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_QuadPyramid.Shape_QuadPyramid'"));
 	if (SphereVisualAsset.Succeeded()) {
 		SphereVisual->SetStaticMesh(SphereVisualAsset.Object);
 		SphereVisual->SetRelativeRotation(FRotator(0, 180, 0));
 		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -10.0f));
-		SphereVisual->SetWorldScale3D(FVector(0.5f));
+		SphereVisual->SetWorldScale3D(FVector(0.5f, 0.5f, 1.0f));
 	}
 	SphereVisual->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
-	// Create a particle system that we can activate or deactivate
-	OurParticleSystem1 = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovementParticles"));
-	OurParticleSystem1->SetupAttachment(SphereVisual);
-	OurParticleSystem1->bAutoActivate = true;
-	OurParticleSystem1->SetRelativeLocation(FVector(-0.0f, 0.0f, 50.0f));
-	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("/Game/StarterContent/Particles/P_Fire.P_Fire"));
-	if (ParticleAsset.Succeeded()) {
-		OurParticleSystem1->SetTemplate(ParticleAsset.Object);
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> mat(TEXT("Material'/Game/StarterContent/Materials/M_MPink.M_MPink'"));
+	if (mat.Succeeded()) {
+		SphereVisual->SetMaterial(0, mat.Object);
 	}
+
+
+	// Create a particle system that we can activate or deactivate
+	//OurParticleSystem1 = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovementParticles"));
+	//OurParticleSystem1->SetupAttachment(SphereVisual);
+	//OurParticleSystem1->bAutoActivate = true;
+	//OurParticleSystem1->SetRelativeLocation(FVector(-0.0f, 0.0f, 50.0f));
+	//static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("/Game/StarterContent/Particles/P_Fire.P_Fire"));
+	//if (ParticleAsset.Succeeded()) {
+	//	OurParticleSystem1->SetTemplate(ParticleAsset.Object);
+	//}
 }
 
 // Called when the game starts or when spawned

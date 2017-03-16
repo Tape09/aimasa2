@@ -52,25 +52,17 @@ struct Guard {
 	FVector pos;
 	IntSet items;
 	bool is_start = false;
-	bool is_end = false;
+	bool is_goal = false;
 };
 
 typedef std::pair<Guard*, Guard*> PGuardPair;
 
 
+// Random set of "guards" that cover "cover".
 std::vector<Guard*> randomCover(std::vector<Guard*> guards, IntSet cover);
+
+// random cover that always keeps start and goal points
 std::vector<Guard*> randomCoverSpecial(std::vector<Guard*> guards, IntSet cover);
-
-// special always includes start points, and preserves order
-//std::vector<Guard*> randomCoverSpecial(std::vector<Guard*> guards, IntSet cover);
-
-//std::vector<Edge_MTSP> randomCoverSpecial(std::vector<Edge_MTSP> edges, IntSet cover, const PathPlanner_KP & planner);
-
-
-
-
-
-//std::vector<Edge_MTSP> create_path(std::vector<Guard*> guards);
 
 
 struct UnorderedEqual {

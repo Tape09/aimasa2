@@ -47,6 +47,11 @@ std::vector<Guard*> randomCoverSpecial(std::vector<Guard*> guards, IntSet cover)
 			continue;
 		}
 
+		if (original[i]->is_goal) {
+			out.push_back(original[i]);
+			continue;
+		}
+
 		if (new_cover.count(original[i]) == 1) {
 			out.push_back(original[i]);
 		}

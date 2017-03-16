@@ -57,8 +57,34 @@ void AMapGen::BeginPlay()
 			items.Add(GetWorld()->SpawnActor<AItem>(itemPoints[j], FVector(1, 0, 0).Rotation(), spawnParams));
 		}
 
+		for (int j = 0; j < goalPoints.Num(); ++j) {
+			goals.Add(GetWorld()->SpawnActor<AGoal>(goalPoints[j], FVector(1, 0, 0).Rotation(), spawnParams));
+		}
+
+		//setGoalVisibility(false);
+
 	}
 }
+
+void AMapGen::setGoalVisibility(bool on) {
+	for (int j = 0; j < goals.Num(); ++j) {
+		goals[j]->SetActorHiddenInGame(!on);
+	}
+}
+
+void AMapGen::setCarVisibility(bool on) {
+	for (int j = 0; j < cars.Num(); ++j) {
+		cars[j]->SetActorHiddenInGame(!on);
+	}
+}
+
+void AMapGen::setItemVisibility(bool on) {
+	for (int j = 0; j < items.Num(); ++j) {
+		items[j]->SetActorHiddenInGame(!on);;
+	}
+}
+
+
 
 // Called every frame
 void AMapGen::Tick( float DeltaTime )
