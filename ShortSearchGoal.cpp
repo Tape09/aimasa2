@@ -324,15 +324,18 @@ void AShortSearchGoal::make_play_path(std::vector<Guard*> & path) {
 	//}
 
 	Guard * last_goal = start_goal_mapping[path[0]];
+	Guard * temp;
 	int goals_placed = 0;
 	while (goals_placed < n_guards-1) {
 		for (int i = 1; i < path.size(); ++i) {
 			if (path[i]->is_start && !path[i-1]->is_goal) {
 				//print_log(start_goal_mapping.count(path[i]));
-				last_goal = start_goal_mapping[path[i]];
+				temp = path[i];
+				
 				auto it = path.begin();
 				std::advance(it, i);
-				path.insert(it, last_goal);				
+				path.insert(it, last_goal);		
+				last_goal = start_goal_mapping[temp];
 				++goals_placed;
 				break;
 			}

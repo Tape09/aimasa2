@@ -63,7 +63,7 @@ public:
 	int n_items;
 
 	int n_sets = 10000;
-	int n_iterations = 1000;
+	int n_iterations = 10000;
 	float p_mut = 0.5;
 
 	float t_now = 0;
