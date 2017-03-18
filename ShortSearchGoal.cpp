@@ -53,28 +53,35 @@ void AShortSearchGoal::Tick(float DeltaTime) {
 	for (int i = 0; i < n_guards; ++i) {
 		float my_dist = t_now * map->v_max;
 
-		for (int j = 1; j < play_path[i].size(); ++j) {
-			if (my_dist < play_path[i][j].total_dist) {
+		if (play_path[i].size() == 1) {
+			map->cars[i]->SetActorLocation(play_path[i][0].waypoint);
+			for (auto it = final_path[i][0]->items.ints.begin(); it != final_path[i][0]->items.ints.end(); ++it) {
+				map->items[*it]->SetActorHiddenInGame(true);
+			}
+		} else {
+			for (int j = 1; j < play_path[i].size(); ++j) {
+				if (my_dist < play_path[i][j].total_dist) {
 
-				for (auto it = final_path[i][j - 1]->items.ints.begin(); it != final_path[i][j - 1]->items.ints.end(); ++it) {
-					map->items[*it]->SetActorHiddenInGame(true);
+					for (auto it = final_path[i][j - 1]->items.ints.begin(); it != final_path[i][j - 1]->items.ints.end(); ++it) {
+						map->items[*it]->SetActorHiddenInGame(true);
+					}
+
+					FVector base = play_path[i][j - 1].waypoint;
+					FVector next = play_path[i][j].waypoint;
+					FVector direction = next - base;
+					direction.Normalize();
+					float dist_traveled = my_dist - play_path[i][j - 1].total_dist;
+					FVector target_position = base + dist_traveled * direction;
+					map->drawPoint(target_position, 5);
+					map->cars[i]->SetActorLocation(target_position);
+					break;
+				} else if (j == play_path[i].size() - 1 && my_dist >= play_path[i][j].total_dist) {
+					FVector target_position = play_path[i][j].waypoint;
+					map->drawPoint(target_position, 5);
+					map->cars[i]->SetActorLocation(target_position);
+				} else {
+
 				}
-
-				FVector base = play_path[i][j - 1].waypoint;
-				FVector next = play_path[i][j].waypoint;
-				FVector direction = next - base;
-				direction.Normalize();
-				float dist_traveled = my_dist - play_path[i][j - 1].total_dist;
-				FVector target_position = base + dist_traveled * direction;
-				map->drawPoint(target_position, 5);
-				map->cars[i]->SetActorLocation(target_position);
-				break;
-			} else if (j == play_path[i].size() - 1 && my_dist >= play_path[i][j].total_dist) {
-				FVector target_position = play_path[i][j].waypoint;
-				map->drawPoint(target_position, 5);
-				map->cars[i]->SetActorLocation(target_position);
-			} else {
-
 			}
 		}
 	}
@@ -540,8 +547,7 @@ void AShortSearchGoal::two_opt_mtsp(std::vector<Guard*> & path) {
 
 
 
-	do {
-		
+	do {		
 		best_swap = 0;
 
 		for (auto it1 : pstart_guards) {
@@ -562,7 +568,6 @@ void AShortSearchGoal::two_opt_mtsp(std::vector<Guard*> & path) {
 				}
 			}
 		}
-
 
 		for (int i = 0; i < path.size() - 2; ++i) {
 			for (int j = i + 2; j < path.size(); ++j) {

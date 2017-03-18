@@ -118,5 +118,7 @@ public:
 	TArray<ACar2 *> cars;
 	TArray<AItem *> items;
 	TArray<AGoal *> goals;
+
+	bool initialized = false;
 };
 

@@ -63,8 +63,8 @@ public:
 	int n_guards;
 	int n_items;
 
-	int n_sets = 10000;
-	int n_iterations = 1000;
+	int n_sets = 20000;
+	int n_iterations = 20000;
 	float p_mut = 0.5;
 
 	float t_now = 0;

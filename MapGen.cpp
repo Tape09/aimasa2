@@ -64,6 +64,7 @@ void AMapGen::BeginPlay()
 		//setGoalVisibility(false);
 
 	}
+	initialized = true;
 }
 
 void AMapGen::setGoalVisibility(bool on) {
@@ -264,7 +265,7 @@ bool AMapGen::Trace(FVector start, FVector end, int polyNum) {
 
 	float dist_error = std::abs(first_hit_dist - expected_dist) / expected_dist;
 
-	return dist_error < 0.1; // kanske fel	
+	return dist_error < 0.001; // kanske fel	
 }
 
 TArray<FVector> AMapGen::getPath(std::vector<PolyPoint> &path) {

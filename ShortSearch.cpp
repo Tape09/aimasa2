@@ -38,6 +38,10 @@ void AShortSearch::BeginPlay()
 void AShortSearch::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
+	if (!map->initialized) {
+		return;
+	}
+
 	if (!has_initialized) {
 		init();
 		map->setGoalVisibility(false);
@@ -56,28 +60,35 @@ void AShortSearch::Tick( float DeltaTime )
 	for (int i = 0; i < n_guards; ++i) {
 		float my_dist = t_now * map->v_max;
 
-		for (int j = 1; j < play_path[i].size(); ++j) {
-			if (my_dist < play_path[i][j].total_dist) {
+		if (play_path[i].size() == 1) {
+			map->cars[i]->SetActorLocation(play_path[i][0].waypoint);
+			for (auto it = final_path[i][0]->items.ints.begin(); it != final_path[i][0]->items.ints.end(); ++it) {
+				map->items[*it]->SetActorHiddenInGame(true);
+			}
+		} else {
+			for (int j = 1; j < play_path[i].size(); ++j) {
+				if (my_dist < play_path[i][j].total_dist) {
 
-				for (auto it = final_path[i][j-1]->items.ints.begin(); it != final_path[i][j-1]->items.ints.end(); ++it) {
-					map->items[*it]->SetActorHiddenInGame(true);
-				}
+					for (auto it = final_path[i][j-1]->items.ints.begin(); it != final_path[i][j-1]->items.ints.end(); ++it) {
+						map->items[*it]->SetActorHiddenInGame(true);
+					}
 
-				FVector base = play_path[i][j - 1].waypoint;
-				FVector next = play_path[i][j].waypoint;
-				FVector direction = next-base;
-				direction.Normalize();
-				float dist_traveled = my_dist - play_path[i][j - 1].total_dist;
-				FVector target_position = base + dist_traveled * direction;
-				map->drawPoint(target_position,5);
-				map->cars[i]->SetActorLocation(target_position);
-				break;
-			} else if (j == play_path[i].size()-1 && my_dist >= play_path[i][j].total_dist) {
-				FVector target_position = play_path[i][j].waypoint;
-				map->drawPoint(target_position, 5);
-				map->cars[i]->SetActorLocation(target_position);
-			} else {
+					FVector base = play_path[i][j - 1].waypoint;
+					FVector next = play_path[i][j].waypoint;
+					FVector direction = next-base;
+					direction.Normalize();
+					float dist_traveled = my_dist - play_path[i][j - 1].total_dist;
+					FVector target_position = base + dist_traveled * direction;
+					map->drawPoint(target_position,5);
+					map->cars[i]->SetActorLocation(target_position);
+					break;
+				} else if (j == play_path[i].size()-1 && my_dist >= play_path[i][j].total_dist) {
+					FVector target_position = play_path[i][j].waypoint;
+					map->drawPoint(target_position, 5);
+					map->cars[i]->SetActorLocation(target_position);
+				} else {
 							
+				}
 			}
 		}
 	}
@@ -178,7 +189,37 @@ void AShortSearch::init() {
 		all_items.ints.insert(i);
 	}
 
+
 	IntSet lost_items = all_items - start_items;
+
+	//for (auto i : lost_items.ints) {
+	//	map->drawPoint(map->itemPoints[i]);
+	//}
+
+	//for (auto i : start_items.ints) {
+	//	map->drawPoint(map->itemPoints[i],15,FColor(0,255,0));
+	//}
+
+
+	//for (int i = 0; i < map->startPoints.Num(); ++i) {
+	//	//FVector from = FVector(-2.1 * 100, 14.1 * 100, 0);
+	//	FVector from = map->startPoints[i];
+	//	FVector to = FVector(-2.12 * 100, 18.76 * 100, 0);
+	//	print_log(from);
+	//	print_log(to);
+	//	print_log(map->Trace(from, to));
+	//	print_log("====");
+	//	if (map->Trace(from, to)) {
+	//		map->drawLine(from, to,FColor(0,255,0));
+	//	} else {
+	//		map->drawLine(from, to, FColor(255, 0, 0));
+	//	}
+
+	//}
+
+	
+	
+	
 
 	std::vector<Guard*> pgenerated_guards;
 	pgenerated_guards.reserve(generated_guards.size());
@@ -203,6 +244,8 @@ void AShortSearch::init() {
 
 	std::vector<Guard*> old_path = new_path;
 	std::vector<Guard*> temp_cover;
+
+	
 
 	bool mutate;
 
@@ -246,9 +289,26 @@ void AShortSearch::init() {
 
 	}
 
+	//int n_start = 0;
+	//for (int i = 0; i < new_path.size(); ++i) {
+	//	print_log(new_path[i]->is_start);
+	//	if (new_path[i]->is_start) {
+	//		++n_start;
+	//	}
+	//}
+	//print_log(n_start);
+	//print_log("==");
+
 
 	print_log(path_len(new_path));
 	make_play_path(new_path);
+
+	//for (int i = 0; i < play_path.size(); ++i) {
+	//	print_log("PATH "+FString::FromInt(i));
+	//	for (int j = 0; j < play_path[i].size(); ++j) {
+	//		print_log(play_path[i][j].waypoint);
+	//	}
+	//}
 
 
 	print_log("TIME TAKEN: " + FString::SanitizeFloat(path_len(new_path) / map->v_max));
@@ -308,6 +368,10 @@ void AShortSearch::make_play_path(const std::vector<Guard*> & path) {
 		}
 	}
 
+	if (path.back()->is_start) {
+		play_path.push_back(std::vector<PathSegment>());
+		final_path.push_back(std::vector<Guard*>());
+	}
 	g.waypoint = path.back()->pos;
 	g.total_dist = 0;
 	play_path.back().push_back(g);
