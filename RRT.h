@@ -55,7 +55,7 @@ public:
 	~RRT();
 
 	
-	std::vector<std::shared_ptr<RRTNode>> get_full_path();
+	std::vector<std::shared_ptr<RRTNode>> get_full_path(FVector start_pos, FVector start_vel, FVector goal_pos, FVector goal_vel);
 	std::vector<std::shared_ptr<RRTNode>> get_full_path2();
 	std::vector<std::shared_ptr<RRTNode>> nodes;
 

@@ -1,20 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "aimasa2.h"
-#include "DCController.h"
+#include "FormationDynamicCar.h"
 
 
 // Sets default values
-ADCController::ADCController() {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+AFormationDynamicCar::AFormationDynamicCar()
+{
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
 // Called when the game starts or when spawned
-void ADCController::BeginPlay() {
+void AFormationDynamicCar::BeginPlay()
+{
 	Super::BeginPlay();
-
 	const UWorld * world = GetWorld();
 
 	if (world) {
@@ -25,23 +26,26 @@ void ADCController::BeginPlay() {
 		map = GetWorld()->SpawnActor<AMapGen>(FVector(0, 0, 0), FRotator::ZeroRotator, spawnParams);
 	}
 
+	n_agents = map->startPoints.Num();
 	v_max = map->v_max;
 	a_max = map->a_max;
-	print_log("Map initializing...");
 
+	print("Map initializing...", 50);
+	print_log("Map initializing...");
 }
 
 // Called every frame
-void ADCController::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
+void AFormationDynamicCar::Tick( float DeltaTime )
+{
+	Super::Tick( DeltaTime );
 	if (!has_initialized) {
 		init();
 		has_initialized = true;
 		print_log("Map initialized!");
 		t_now = 0;
 		pidx = 0;
-		
-		if (my_path.size() > 0) {	
+
+		if (my_path.size() > 0) {
 			my_path[pidx]->path->reset();
 			is_driving = true;
 		}
@@ -75,11 +79,36 @@ void ADCController::Tick(float DeltaTime) {
 		DrawDebugPoint(GetWorld(), s.pos + FVector(0, 0, 30), 2.5, FColor::Red, true);
 
 	}
-
 }
 
-// calculate path between two points and velocities
-std::shared_ptr<Path> ADCController::calc_path(FVector pos0, FVector vel0, FVector pos1, FVector vel1) {
+void AFormationDynamicCar::init() {
+	RRT rrt(100, map, std::bind(&AFormationDynamicCar::calc_path, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), v_max, a_max);
+
+	//file_log("asdf1");
+	my_path = rrt.get_full_path(map->startPoints[0], map->startVel, map->goalPoints[0],map->goalVel);
+	//file_log("asdf2");
+
+	if (my_path.size() > 0) {
+		for (int i = 0; i < my_path.size(); ++i) {
+
+			print_log(my_path[i]->pos.ToString());
+			print_log(FString::SanitizeFloat(my_path[i]->path->path_time()));
+			print_log(FString::SanitizeFloat(my_path[i]->path->pathExists()));
+			DrawDebugPoint(GetWorld(), my_path[i]->pos + FVector(0, 0, 30), 15, FColor::Magenta, true);
+		}
+		DrawDebugPoint(GetWorld(), map->startPoints[0] + FVector(0, 0, 30), 15, FColor::Magenta, true);
+		print("TIME TAKEN: " + FString::SanitizeFloat(my_path.back()->cost));
+		print_log("TIME TAKEN: " + FString::SanitizeFloat(my_path.back()->cost));
+	}
+
+
+	//my_path.push_back(std::make_shared<RRTNode>(RRTNode(std::make_shared<RRTNode>(RRTNode(pos0,vel0)), calc_path(pos0, vel0, pos1, vel1),pos0)));
+
+	//print_log("INIT DONE");
+}
+
+
+std::shared_ptr<Path> AFormationDynamicCar::calc_path(FVector pos0, FVector vel0, FVector pos1, FVector vel1) {
 	DynamicCarPaths* dp = new DynamicCarPaths(pos0, vel0, pos1, vel1, v_max, map->phi_max, map->L_car, a_max);
 
 
@@ -108,32 +137,17 @@ std::shared_ptr<Path> ADCController::calc_path(FVector pos0, FVector vel0, FVect
 
 
 
-void ADCController::init() {
-	RRT rrt(1000, map, std::bind(&ADCController::calc_path, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), v_max, a_max);
-	
-	//file_log("asdf1");
-	my_path = rrt.get_full_path(map->startPoints[0], map->startVel, map->goalPoints[0], map->goalVel);
-	//file_log("asdf2");
 
-	if (my_path.size() > 0) {
-		for (int i = 0; i < my_path.size(); ++i) {
-			
-			print_log(my_path[i]->pos.ToString());
-			print_log(FString::SanitizeFloat(my_path[i]->path->path_time()));
-			print_log(FString::SanitizeFloat(my_path[i]->path->pathExists()));
-			DrawDebugPoint(GetWorld(), my_path[i]->pos + FVector(0, 0, 30), 15, FColor::Magenta, true);
-		}
-		DrawDebugPoint(GetWorld(), map->startPoints[0] + FVector(0, 0, 30), 15, FColor::Magenta, true);
-		print("TIME TAKEN: " + FString::SanitizeFloat(my_path.back()->cost));
-		print_log("TIME TAKEN: " + FString::SanitizeFloat(my_path.back()->cost));
-	}
-	//FVector pos0(-100,100,0);
-	//FVector pos1(-400,1000,0);
-	//FVector vel0(-100,0,0);
-	//FVector vel1(0,100,0);
 
-	//my_path.push_back(std::make_shared<RRTNode>(RRTNode(std::make_shared<RRTNode>(RRTNode(pos0,vel0)), calc_path(pos0, vel0, pos1, vel1),pos0)));
 
-	//print_log("INIT DONE");
-}
+
+
+
+
+
+
+
+
+
+
 

@@ -18,7 +18,7 @@ RRT::~RRT()
 }
 
 
-std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path() {
+std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path(FVector start_pos, FVector start_vel, FVector goal_pos, FVector goal_vel) {
 	std::vector<std::shared_ptr<RRTNode>> out_path;
 
 	std::shared_ptr<RRTNode> best_path = NULL;
@@ -29,10 +29,10 @@ std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path() {
 	//int corner_idx;
 	bool visible;
 	
-	FVector start_pos = map->startPoints[0];
-	FVector start_vel = map->startVel;
-	FVector goal_pos = map->goalPoints[0];
-	FVector goal_vel = map->goalVel;
+	//FVector start_pos = map->startPoints[0];
+	//FVector start_vel = map->startVel;
+	//FVector goal_pos = map->goalPoints[0];
+	//FVector goal_vel = map->goalVel;
 
 	if (start_vel.Size() > v_max) {
 		start_vel = (start_vel / start_vel.Size()) * v_max;
