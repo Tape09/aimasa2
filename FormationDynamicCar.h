@@ -31,20 +31,31 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 	void init();
-	std::vector<std::shared_ptr<RRTNode>> my_path;
+	std::vector<std::vector<std::shared_ptr<RRTNode>>> my_path;
+
 	std::shared_ptr<Path> calc_path(FVector pos0, FVector vel0, FVector pos1, FVector vel1);
+
+	float formation_error();
+	void map_goals();
 
 	int buffer_ticks = 100;
 
 	float v_max;
 	float a_max;
 
-	float t_now = 0;
-	float pidx = 0;
-	bool is_driving = false;
+	float cost;
+
+	float abs_time = 0;
+	std::vector<float> t_now;	
+	std::vector<float> pidx;		
+	std::vector<bool> is_driving;
 	
+	std::unordered_map<int,int> start_goal_mapping;
+
+
 	int n_agents;
 	bool has_initialized = false;
+	bool stop = false;
 	AMapGen * map;
 	
 };

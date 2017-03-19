@@ -11,8 +11,8 @@ AMapGen::AMapGen()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	FString problem = FString("problem_A5_1");
-	//FString problem = FString("problem_A3");
+	FString problem = FString("problem_A5_2");
+	//FString problem = FString("problem_A1");
 	readJson(problem);
 	initFakeGroundPoints();
 }
