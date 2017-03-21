@@ -11,8 +11,9 @@ AMapGen::AMapGen()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	FString problem = FString("problem_A5_2");
-	//FString problem = FString("problem_A1");
+	FString problem = FString("problem_B2_new");
+	//FString problem = FString("problem_B2_new");
+	//FString problem = FString("problem_A2");
 	readJson(problem);
 	initFakeGroundPoints();
 }
@@ -313,6 +314,9 @@ void AMapGen::drawCircle(FVector center, float radius, FColor color, FVector z_o
 	DrawDebugCircle(GetWorld(),center+z_offset,radius,100,color,true,-1.0,(uint8)'\000',10.0,FVector(0,1,0),FVector(1,0,0),false);
 }
 
+inline bool AMapGen::isValidPoint(FVector p) {
+	return !isInAnyPolygon(p, allGroundPoints) && isInPolygon(p, wallPoints);
+}
 
 inline FVector AMapGen::randomPoint(FVector middle, float radius) {
 	if(radius < 0) radius = sensor_range;
@@ -333,7 +337,22 @@ inline FVector AMapGen::randomPoint(FVector middle, float radius) {
 	return random_point;
 }
 
+inline FVector AMapGen::randomPointNoCollision(FVector middle, float radius) {
+	if (radius < 0) radius = sensor_range;
 
+	float random_angle;
+	float random_radius;
+
+	FVector random_direction;
+	FVector random_point;
+
+	random_angle = FMath::RandRange(0.0, twopi);
+	random_direction = FVector(cos(random_angle), sin(random_angle), 0.0);
+	random_radius = FMath::RandRange(0.0, radius);
+	random_point = middle + random_radius*random_direction;
+
+	return random_point;
+}
 
 
 

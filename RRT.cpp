@@ -43,13 +43,26 @@ std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path(FVector start_pos, FVec
 		goal_vel = (goal_vel / goal_vel.Size()) * v_max;
 		goal_vel = goal_vel * 0.999;
 	}
-
+	
 	TArray<FVector> cornerPoints = map->cornerPoints;
 	cornerPoints.Add(goal_pos);
 
 	nodes.clear();
 	nodes.push_back(std::make_shared<RRTNode>(start_pos, start_vel));
 
+	{
+		std::shared_ptr<Path> temp_path = pathFcn(nodes.back()->pos, nodes.back()->vel, goal_pos, goal_vel);
+		if (temp_path->isValid() && temp_path->pathExists()) {
+			std::shared_ptr<RRTNode> temp_node = std::make_shared<RRTNode>(nodes.back(), temp_path, goal_pos);
+			if (temp_node->cost < best_total_cost) {
+				best_path = temp_node;
+				best_total_cost = temp_node->cost;
+				found_path = true;
+			}
+		}
+	}
+
+	if(!found_path) {
 	for(int j = 0; j<max_iterations; ++j) {
 
 		// pick random visible corner
@@ -112,6 +125,7 @@ std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path(FVector start_pos, FVec
 			}
 		}
 		
+	}
 	}
 
 	if(found_path) {
@@ -244,12 +258,157 @@ std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path2() {
 
 
 
+State state_at(std::vector<std::shared_ptr<RRTNode>> path, float time) {
+
+	float t_prev = 0;
+	float t = 0;
+	float query_time = 0;
+	int pidx = -1;
+
+	for (int i = 0; i < path.size(); ++i) {
+		t += path[i]->path->path_time();
+		if (time < t) {
+			pidx = i;
+			break;
+		}
+		t_prev += path[i]->path->path_time();
+	}
+
+	float tt = time - t_prev;
+	if (pidx < 0) {
+		pidx = path.size() - 1;
+		tt = t;
+	}
+
+	return path[pidx]->path->state_at(tt);
+}
 
 
 
 
+std::vector<std::shared_ptr<RRTNode>> RRT::get_full_path_hint(FVector start_pos, FVector start_vel, FVector goal_pos, FVector goal_vel, std::vector<std::shared_ptr<RRTNode>> & hint_path) {
+	std::vector<std::shared_ptr<RRTNode>> out_path;
+
+	float hint_path_time = hint_path.back()->cost;
+	float connect_radius = 0;
+	float goal_search_radius = 0;
+
+	for (int i = 0; i < map->goalPoints.Num(); ++i) {
+		for (int j = 0; j < map->goalPoints.Num(); ++j) {
+			float d = FVector::Dist(map->goalPoints[i], map->goalPoints[j]);
+			connect_radius = std::max(connect_radius,d);
+		}
+	}
+
+	goal_search_radius = connect_radius * 1.25;
+
+	connect_radius *= 1.7500;
 
 
+	std::shared_ptr<RRTNode> best_path = NULL;
+	float best_total_cost = 99999999;
+	bool found_path = false;
+
+	//int node_idx;
+	//int corner_idx;
+	bool visible;
+
+	//FVector start_pos = map->startPoints[0];
+	//FVector start_vel = map->startVel;
+	//FVector goal_pos = map->goalPoints[0];
+	//FVector goal_vel = map->goalVel;
+
+	if (start_vel.Size() > v_max) {
+		start_vel = (start_vel / start_vel.Size()) * v_max;
+		start_vel = start_vel * 0.999;
+	}
+
+	if (goal_vel.Size() > v_max) {
+		goal_vel = (goal_vel / goal_vel.Size()) * v_max;
+		goal_vel = goal_vel * 0.999;
+	}
+
+	TArray<FVector> cornerPoints = map->cornerPoints;
+	cornerPoints.Add(goal_pos);
+
+	nodes.clear();
+	nodes.push_back(std::make_shared<RRTNode>(start_pos, start_vel));
+
+	for (int j = 0; j<max_iterations; ++j) {
+		std::vector<std::shared_ptr<RRTNode>> visible_nodes;
+		FVector rpoint;
+
+		while (visible_nodes.empty()) {
+			// pick random point along hint path
+			float rtime = FMath::FRandRange(0,hint_path_time);
+			State rstate = state_at(hint_path,rtime);
+			rpoint = rstate.pos;
+
+			// get all nodes that are within range, and visible
+			for (int i = 0; i < nodes.size(); ++i) {
+				if(FVector::Dist(nodes[i]->pos, rpoint) > connect_radius) continue;
+				visible = map->Trace(nodes[i]->pos, rpoint, -1);
+				if (visible) visible_nodes.push_back(nodes[i]);
+			}
+		}
+
+		// random point around rpoint
+		FVector random_point = map->randomPoint(rpoint,connect_radius);
+		FVector random_vel = randVel(v_max);
+
+		// find paths from points to random point
+		float best_cost = 999999;
+		std::shared_ptr<RRTNode> best_segment;
+		bool found_segment = false;
+		for (int i = 0; i < visible_nodes.size(); ++i) {
+			std::shared_ptr<Path> temp_path = pathFcn(visible_nodes[i]->pos, visible_nodes[i]->vel, random_point, random_vel);
+			if (temp_path->isValid() && temp_path->pathExists()) {
+				std::shared_ptr<RRTNode> temp_node = std::make_shared<RRTNode>(visible_nodes[i], temp_path, rpoint);
+				if (temp_node->cost < best_cost) {
+					best_cost = temp_node->cost;
+					found_segment = true;
+					best_segment = temp_node;
+				}
+			}
+		}
+
+		if (found_segment) {
+			nodes.push_back(best_segment);
+
+			// linetrace random_point to goal => check path to goal
+			if(FVector::Dist(nodes.back()->pos, goal_pos) < goal_search_radius) {
+				visible = map->Trace(nodes.back()->pos, goal_pos, -1);
+				if (visible) {
+					FVector goalVel = (goal_pos - nodes.back()->pos);
+					goalVel.Normalize();
+					goalVel = goalVel * v_max;
+
+					std::shared_ptr<Path> temp_path = pathFcn(nodes.back()->pos, nodes.back()->vel, goal_pos, goalVel);
+					if (temp_path->isValid() && temp_path->pathExists()) {
+						std::shared_ptr<RRTNode> temp_node = std::make_shared<RRTNode>(nodes.back(), temp_path, goal_pos);
+						if (temp_node->cost < best_total_cost) {
+							best_path = temp_node;
+							best_total_cost = temp_node->cost;
+							found_path = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (found_path) {
+		std::shared_ptr<RRTNode> asdf = best_path;
+		while (asdf->cost != 0) {
+			out_path.push_back(asdf);
+			asdf = asdf->child;
+		}
+
+		std::reverse(out_path.begin(), out_path.end());
+	}
+
+	return out_path;
+}
 
 
 

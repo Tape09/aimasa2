@@ -35,7 +35,6 @@ struct RRTNode {
 		vel = path->vel_1();
 	}
 
-
 	float cost;
 	FVector corner;
 	FVector pos;
@@ -46,7 +45,7 @@ struct RRTNode {
 	
 };
 
-
+State state_at(std::vector<std::shared_ptr<RRTNode>> path, float time);
 
 class AIMASA2_API RRT
 {
@@ -56,6 +55,7 @@ public:
 
 	
 	std::vector<std::shared_ptr<RRTNode>> get_full_path(FVector start_pos, FVector start_vel, FVector goal_pos, FVector goal_vel);
+	std::vector<std::shared_ptr<RRTNode>> get_full_path_hint(FVector start_pos, FVector start_vel, FVector goal_pos, FVector goal_vel, std::vector<std::shared_ptr<RRTNode>> & hint_path);
 	std::vector<std::shared_ptr<RRTNode>> get_full_path2();
 	std::vector<std::shared_ptr<RRTNode>> nodes;
 
@@ -64,7 +64,7 @@ public:
 	float v_max;
 	float a_max;
 
-	const float sigma2 = 100;
+	float sigma2 = 100;
 	int max_iterations;
 
 	PathFcnType pathFcn;

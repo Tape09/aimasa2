@@ -270,7 +270,7 @@ void AShortSearch::init() {
 		new_path = randomCoverSpecial(new_path, lost_items);
 
 		// two opt
-		two_opt_mtsp(new_path);
+		two_opt_mtsp_random(new_path);
 
 		//print_log(mutate);
 		//print_log(new_path.size());
@@ -560,6 +560,74 @@ void AShortSearch::two_opt_mtsp(std::vector<Guard*> & path) {
 		}
 	} while (best_swap != 0);
 }
+
+void AShortSearch::two_opt_mtsp_random(std::vector<Guard*> & path) {
+
+	std::vector<Guard*> temp_path1;
+	std::vector<Guard*> temp_path2;
+
+	int best_i = 0;
+	int best_j = 0;
+	int best_swap;
+
+	float old_path_len = path_len(path);
+	float new_path_len1;
+	float new_path_len2;
+
+	old_path_len = path_len(path);
+
+	do {
+		best_swap = 0;
+		for (int k = 0; k < 100; ++k) {
+			int i;
+			int j;
+
+			do {
+				i = FMath::RandRange(0, path.size() - 1);
+				j = FMath::RandRange(0, path.size() - 1);
+			} while(std::abs(i-j)<2);
+
+			if (j < i) {
+				std::swap(i,j);
+			}
+
+			temp_path1 = path;
+			temp_path2 = path;
+
+			two_opt_swap1(temp_path1, i, j);
+			two_opt_swap2(temp_path2, i, j);
+
+			new_path_len1 = path_len(temp_path1);
+			new_path_len2 = path_len(temp_path2);
+
+			if (new_path_len1 < old_path_len) {
+				old_path_len = new_path_len1;
+				best_i = i;
+				best_j = j;
+				best_swap = 1;
+			}
+
+			if (new_path_len2 < old_path_len) {
+				old_path_len = new_path_len2;
+				best_i = i;
+				best_j = j;
+				best_swap = 2;
+			}
+		}
+		
+		if (best_swap == 1) {
+			two_opt_swap1(path, best_i, best_j);
+		}
+
+		if (best_swap == 2) {
+			two_opt_swap2(path, best_i, best_j);
+		}
+
+	} while (best_swap != 0);
+}
+
+
+
 
 void AShortSearch::two_opt_swap1(std::vector<Guard*> & path, int idx1, int idx2) {
 	auto it1 = std::next(path.begin(), 1 + std::min(idx1, idx2));

@@ -60,57 +60,7 @@ float DynamicCarPaths::time_taken() {
 }
 
 
-State DynamicCarPaths::state_at(RSPath rsp, float time) const {
-	//print_log("time: " + FString::SanitizeFloat(time));
-	float d = rsp.dist_at(time);
-	//int idx = rsp.get_rsc_idx(time);
 
-	
-	//print_log("dist: " + FString::SanitizeFloat(d));
-	//print_log("time: " + FString::SanitizeFloat(time));
-	//print_log("dist: " + FString::SanitizeFloat(rsp.ais.back().p3));
-	//print_log("tim: " + FString::SanitizeFloat(rsp.time));
-
-	State istate;
-	istate.pos = pos0;
-	istate.vel = vel0;
-
-	//print_log(istate);
-
-	//print_log(FString::SanitizeFloat(rsp.dist));
-	//print_log(FString::SanitizeFloat(rsp.dist*turn_radius));
-	//print_log(rsp.word());
-
-
-	for (int i = 1; i<rsp.dists.size(); ++i) {
-		//print_log(FString::SanitizeFloat(rsp.dists[i]));
-		if (d <= rsp.dists[i]*turn_radius) {
-			return state_at(istate, rsp.components[i-1], (d - rsp.dists[i - 1] * turn_radius));
-		} else {
-			istate = state_at(istate, rsp.components[i-1], rsp.components[i-1].dist*turn_radius);
-		}
-		//print_log(istate);
-	}
-
-	return istate;
-
-}
-
-State DynamicCarPaths::state_at(State istate, RSComponent rsc, float dist) const {
-	State s;
-
-	if (rsc.turn == L) {
-		s = drive_L(istate, rsc, dist);
-	} else if (rsc.turn == R) {
-		s = drive_R(istate, rsc, dist);
-	} else {
-		s = drive_S(istate, rsc, dist);
-	}
-
-
-
-	return s;
-}
 
 State DynamicCarPaths::drive_R(State istate, RSComponent rsc, float dist) const {
 	State s;
@@ -179,6 +129,37 @@ State DynamicCarPaths::drive_S(State istate, RSComponent rsc, float dist) const 
 	return s;
 }
 
+State DynamicCarPaths::state_at(RSPath rsp, float time) const {
+	float d = rsp.dist_at(time);
+
+	State istate;
+	istate.pos = pos0;
+	istate.vel = vel0;
+
+	for (int i = 1; i<rsp.dists.size(); ++i) {
+		if (d <= rsp.dists[i] * turn_radius) {
+			return state_at(istate, rsp.components[i - 1], (d - rsp.dists[i - 1] * turn_radius));
+		} else {
+			istate = state_at(istate, rsp.components[i - 1], rsp.components[i - 1].dist*turn_radius);
+		}
+	}
+
+	return istate;
+}
+
+State DynamicCarPaths::state_at(State istate, RSComponent rsc, float dist) const {
+	State s;
+
+	if (rsc.turn == L) {
+		s = drive_L(istate, rsc, dist);
+	} else if (rsc.turn == R) {
+		s = drive_R(istate, rsc, dist);
+	} else {
+		s = drive_S(istate, rsc, dist);
+	}
+
+	return s;
+}
 
 State DynamicCarPaths::state_at(int idx, float time) const {
 	return state_at(all_paths[idx], time);

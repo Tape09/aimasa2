@@ -74,6 +74,9 @@ public:
 
 
 	FVector randomPoint(FVector mid, float radius = -1);
+	FVector randomPointNoCollision(FVector mid, float radius = -1);
+
+	bool isValidPoint(FVector p);
 
 	int Nvertices;
 

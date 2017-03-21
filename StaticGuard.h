@@ -34,7 +34,7 @@ public:
 	std::vector<Guard> guards;
 	bool has_initialized = false;
 	int n_guards;
-	const int n_sets = 1000;
+	const int n_sets = 5000;
 	AMapGen * map;
 	
 };
