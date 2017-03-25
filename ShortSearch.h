@@ -14,6 +14,7 @@
 #include <iterator>
 #include <algorithm>
 #include <limits>
+#include <chrono>
 #include "ShortSearch.generated.h"
 
 
@@ -40,7 +41,7 @@ public:
 	};
 
 	void two_opt_mtsp(std::vector<Guard*> & path);
-	void two_opt_mtsp_random(std::vector<Guard*> & path);
+	void two_opt_mtsp_random(std::vector<Guard*> & path, int ms_limit);
 	void two_opt_swap1(std::vector<Guard*> & path, int idx1, int idx2);
 	void two_opt_swap2(std::vector<Guard*> & path, int idx1, int idx2);
 

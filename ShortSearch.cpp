@@ -234,13 +234,19 @@ void AShortSearch::init() {
 	}
 
 	std::vector<Guard*> new_path = randomCover(pgenerated_guards, lost_items);
-	//std::vector<Guard*> nonstart_guards = rcover;
+	new_path = randomCover(new_path, lost_items);
+	new_path = randomCover(new_path, lost_items);
+	new_path = randomCover(new_path, lost_items);
+	new_path = randomCover(new_path, lost_items);
+	new_path = randomCover(new_path, lost_items);
 
 
 	new_path.insert(new_path.begin(), pstart_guards.begin(), pstart_guards.end());
 	if (new_path.size() > 1) {
 		std::random_shuffle(new_path.begin() + 1, new_path.end());
 	}
+
+	two_opt_mtsp_random(new_path, 30000);
 
 	std::vector<Guard*> old_path = new_path;
 	std::vector<Guard*> temp_cover;
@@ -270,7 +276,7 @@ void AShortSearch::init() {
 		new_path = randomCoverSpecial(new_path, lost_items);
 
 		// two opt
-		two_opt_mtsp_random(new_path);
+		two_opt_mtsp_random(new_path,100);
 
 		//print_log(mutate);
 		//print_log(new_path.size());
@@ -289,57 +295,17 @@ void AShortSearch::init() {
 
 	}
 
-	//int n_start = 0;
-	//for (int i = 0; i < new_path.size(); ++i) {
-	//	print_log(new_path[i]->is_start);
-	//	if (new_path[i]->is_start) {
-	//		++n_start;
-	//	}
-	//}
-	//print_log(n_start);
-	//print_log("==");
+	two_opt_mtsp_random(new_path, 30000);
+
 
 
 	print_log(path_len(new_path));
 	make_play_path(new_path);
 
-	//for (int i = 0; i < play_path.size(); ++i) {
-	//	print_log("PATH "+FString::FromInt(i));
-	//	for (int j = 0; j < play_path[i].size(); ++j) {
-	//		print_log(play_path[i][j].waypoint);
-	//	}
-	//}
-
 
 	print_log("TIME TAKEN: " + FString::SanitizeFloat(path_len(new_path) / map->v_max));
 
 	draw_path(new_path);
-
-	//for (int i = 0; i < n_guards; ++i) {
-	//	for (int j = 0; j < play_path[i].size(); ++j) {
-	//		map->drawPoint(play_path[i][j].waypoint,15,FColor(0,0,255));
-	//	}
-	//}
-
-
-	//for (int i = 0; i < new_path.size(); ++i) {
-	//	for (auto it = new_path[i]->items.ints.begin(); it != new_path[i]->items.ints.end(); ++it) {
-	//		map->items[*it]->SetActorHiddenInGame(true);
-	//	}
-	//}
-
-
-	//for (int i = 0; i < n_guards; ++i) {
-	//	print_log(final_path[i].size());
-	//	print_log(play_path[i].size());
-	//	for (int j = 0; j < final_path[i].size(); ++j) {
-	//		for (auto it = final_path[i][j]->items.ints.begin(); it != final_path[i][j]->items.ints.end(); ++it) {
-	//			map->items[*it]->SetActorHiddenInGame(true);
-	//		}
-	//	}
-	//}
-	
-
 }
 
 void AShortSearch::make_play_path(const std::vector<Guard*> & path) {
@@ -561,14 +527,13 @@ void AShortSearch::two_opt_mtsp(std::vector<Guard*> & path) {
 	} while (best_swap != 0);
 }
 
-void AShortSearch::two_opt_mtsp_random(std::vector<Guard*> & path) {
+void AShortSearch::two_opt_mtsp_random(std::vector<Guard*> & path, int ms_limit) {
+	std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
+	std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+	int t = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
 
 	std::vector<Guard*> temp_path1;
 	std::vector<Guard*> temp_path2;
-
-	int best_i = 0;
-	int best_j = 0;
-	int best_swap;
 
 	float old_path_len = path_len(path);
 	float new_path_len1;
@@ -577,53 +542,45 @@ void AShortSearch::two_opt_mtsp_random(std::vector<Guard*> & path) {
 	old_path_len = path_len(path);
 
 	do {
-		best_swap = 0;
-		for (int k = 0; k < 100; ++k) {
-			int i;
-			int j;
 
-			do {
-				i = FMath::RandRange(0, path.size() - 1);
-				j = FMath::RandRange(0, path.size() - 1);
-			} while(std::abs(i-j)<2);
+		int i;
+		int j;
 
-			if (j < i) {
-				std::swap(i,j);
-			}
+		do {
+			i = FMath::RandRange(0, path.size() - 1);
+			j = FMath::RandRange(0, path.size() - 1);
+		} while(std::abs(i-j)<2);
 
-			temp_path1 = path;
-			temp_path2 = path;
+		if (j < i) {
+			std::swap(i,j);
+		}
 
-			two_opt_swap1(temp_path1, i, j);
-			two_opt_swap2(temp_path2, i, j);
+		temp_path1 = path;
+		temp_path2 = path;
 
-			new_path_len1 = path_len(temp_path1);
-			new_path_len2 = path_len(temp_path2);
+		two_opt_swap1(temp_path1, i, j);
+		two_opt_swap2(temp_path2, i, j);
 
+		new_path_len1 = path_len(temp_path1);
+		new_path_len2 = path_len(temp_path2);
+
+		if (new_path_len1 < new_path_len2) {
 			if (new_path_len1 < old_path_len) {
+				//two_opt_swap1(path, i, j);
+				path = temp_path1;
 				old_path_len = new_path_len1;
-				best_i = i;
-				best_j = j;
-				best_swap = 1;
 			}
-
+		} else {
 			if (new_path_len2 < old_path_len) {
+				//two_opt_swap2(path, i, j);
+				path = temp_path2;
 				old_path_len = new_path_len2;
-				best_i = i;
-				best_j = j;
-				best_swap = 2;
 			}
 		}
-		
-		if (best_swap == 1) {
-			two_opt_swap1(path, best_i, best_j);
-		}
 
-		if (best_swap == 2) {
-			two_opt_swap2(path, best_i, best_j);
-		}
-
-	} while (best_swap != 0);
+		t1 = std::chrono::steady_clock::now();
+		t = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+	} while (t < ms_limit);
 }
 
 
